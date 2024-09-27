@@ -1,0 +1,11 @@
+services:
+  python:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: secret_back
+    tty: true
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
