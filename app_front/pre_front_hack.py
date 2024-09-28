@@ -1,5 +1,6 @@
 const FetchScholarInfo = async (query: string) => {
 	try {
+		# NEXT_PUBLIC_APは、.env.exampleに記述
 		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/execute?params=${query}`, {
 			method: 'GET',
 			headers: {
