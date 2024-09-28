@@ -7,7 +7,7 @@ import sys
 sys.path.append('../')
 #以下のappからspotに変更する
 #from app import scraping_main
-#from spot import motoki
+#from spot import spot_motoki
 
 from localization import Localization
 
@@ -36,7 +36,7 @@ def execute_route():
     budget = data['Budget']
 
     # 非同期関数の呼び出し
-    result = asyncio.run(motoki(dep_point, departure_time, arrival_time, budget))
+    result = asyncio.run(spot_motoki(dep_point, departure_time, arrival_time, budget))
 
     # JSONレスポンスとして返す
     return jsonify(result)
