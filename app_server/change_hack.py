@@ -27,7 +27,7 @@ def execute_route():
     
     # 必須パラメータがすべて存在するか確認
     if not all(key in data for key in ['DepPoint', 'DepartureTime', 'ArrivalTime', 'Budget']):
-        return jsonify({"error": Localization.get('config.routes.bad_request')}), 400
+        return jsonify({"error": Localization.get('app_server.routes.bad_request')}), 400
 
     # パラメータを取得
     dep_point = data['DepPoint']
