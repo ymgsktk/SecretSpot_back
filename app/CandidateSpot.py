@@ -17,3 +17,5 @@ class PlaceOfCandidate(Spot):
     def setEstimatedArrivalTime(self,estimated_arrival_time: datetime):
         self.estimated_arrival_time=estimated_arrival_time
     
+    def getEvaluation(self):
+        return self.evaluation
