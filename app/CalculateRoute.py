@@ -1,6 +1,8 @@
 from typing import Final
 from datetime import datetime, timedelta
 import urllib.request, json
+import PlaceOfDeparture
+import PlaceOfCandidate
 
 class Distance:
     
@@ -8,7 +10,7 @@ class Distance:
     endpoint: Final[str] = 'https://maps.googleapis.com/maps/api/directions/json?'
     api_key: Final[str] = 'AIzaSyB-UFNTN_spIRoXDKlAr5o2sh5RQRKj1uM'
     
-    def __init__(self,departureTime,origin,destination):
+    def __init__(self,departureTime,origin: PlaceOfDeparture,destination: PlaceOfCandidate):
         self.departureTIme=departureTime
         self.origin=origin
         self.destination=destination
@@ -17,8 +19,11 @@ class Distance:
         
 
         #リクエスト作成
+        origin_coordinates=self.origin.get_latitude()+","+self.origin.get_longitude()
+        destination_coordinates=self.destination.get_latitude()+","+self.destination.get_longitude()
         mode="driving"
-        nav_request = 'language=ja&mode={}&origin={}&destination={}&key={}'.format(mode,self.origin,self.destination,self.api_key)
+        
+        nav_request = 'language=ja&mode={}&origin={}&destination={}&key={}'.format(mode,origin_coordinates,destination_coordinates,self.api_key)
         nav_request = urllib.parse.quote_plus(nav_request, safe='=&')
         request = self.endpoint + nav_request
 
@@ -49,6 +54,9 @@ class Distance:
         duration_seconds= key2['duration']['value']
         arrival_time = current_time + timedelta(seconds=duration_seconds)
         print(f"到着予定時刻: {arrival_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+
+    
 def main():
     origin = "35.681236,139.767125"
     destination = "34.985849,135.758766"
