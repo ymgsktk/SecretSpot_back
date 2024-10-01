@@ -13,7 +13,9 @@ from localization import Localization
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": os.environ.get("FRONT_API_URL")}})
+
+FRONT_URL = "http://localhost:3000"
+CORS(app, resources={r"/api/*": {"origins": FRONT_URL}})
 
 @app.route("/")
 def index():

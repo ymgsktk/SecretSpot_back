@@ -6,14 +6,16 @@ import os
 import sys
 sys.path.append('../')
 #以下のappからspotに変更する
-from app import scraping_main
-from spot import motoki
+#from app import scraping_main
+#from spot import spot_motoki
 
-from config import Localization
+from localization import Localization
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": os.environ.get("FRONT_API_URL")}})
+
+FRONT_URL = "http://localhost:3000"
+CORS(app, resources={r"/api/*": {"origins": FRONT_URL}})
 
 @app.route("/")
 def index():
@@ -36,10 +38,11 @@ def execute_route():
     budget = data['Budget']
 
     # 非同期関数の呼び出し
-    result = asyncio.run(motoki(dep_point, departure_time, arrival_time, budget))
+    result = asyncio.run(spot_motoki(dep_point, departure_time, arrival_time, budget))
 
     # JSONレスポンスとして返す
     return jsonify(result)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=False)
