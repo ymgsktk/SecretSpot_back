@@ -18,4 +18,4 @@ class PlaceOfCandidate(Spot):
         self.estimated_arrival_time=estimated_arrival_time
     
     def getEvaluation(self):
-        return self.evaluation
+        return self.evaluate

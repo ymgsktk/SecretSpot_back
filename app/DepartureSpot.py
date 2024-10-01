@@ -1,7 +1,7 @@
-import Place
+import app.Spot as Spot
 from datetime import datetime
 
-class PlaceOfDeparture(Place):
+class PlaceOfDeparture(Spot):
     def __init__(self, name: str, address: str, latitude: str, longitude:str, departure_time: datetime) -> None:
         # 親クラス(Place)の属性を初期化
         super().__init__(name, address, latitude, longitude)

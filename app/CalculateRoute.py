@@ -1,8 +1,8 @@
 from typing import Final
 from datetime import datetime, timedelta
 import urllib.request, json
-import PlaceOfDeparture
-import PlaceOfCandidate
+import app.DepartureSpot as DepartureSpot
+import app.CandidateSpot as CandidateSpot
 
 class Distance:
     
@@ -10,14 +10,13 @@ class Distance:
     endpoint: Final[str] = 'https://maps.googleapis.com/maps/api/directions/json?'
     api_key: Final[str] = 'AIzaSyB-UFNTN_spIRoXDKlAr5o2sh5RQRKj1uM'
     
-    def __init__(self,departureTime,origin: PlaceOfDeparture,destination: PlaceOfCandidate):
+    def __init__(self,departureTime,origin: DepartureSpot,destination: CandidateSpot):
         self.departureTIme=departureTime
         self.origin=origin
         self.destination=destination
         
     def calculateDistance(self):
         
-
         #リクエスト作成
         origin_coordinates=self.origin.get_latitude()+","+self.origin.get_longitude()
         destination_coordinates=self.destination.get_latitude()+","+self.destination.get_longitude()
