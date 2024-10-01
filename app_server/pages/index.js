@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import FetchScholarInfo from '../change_front1';  // FetchScholarInfoのインポート
+import FetchServerInfo from '../change_front1';  // FetchScholarInfoのインポート
 
 function Home() {
   const [data, setData] = useState(null);
@@ -11,11 +11,11 @@ function Home() {
       try {
         const DepPoint = { lat: 35.6586, lng: 139.7454 };  // DepPointとして緯度と経度を設定
         const DepAddress = "1-1 Marunouchi, Chiyoda City, Tokyo";  // 出発地点の住所
-        const departureTime = { hour: 10, min: 30 };  // 出発時刻を設定
+        const DepartureTime = { hour: 10, min: 30 };  // 出発時刻を設定
         const ArrivalTime = { hour: 12, min: 45 };  // 到着時刻を設定
         const Budget = 100;  // 予算を設定
 
-        const result = await FetchScholarInfo(depPoint, departureTime, arrivalTime, budget);
+        const result = await FetchServerInfo(DepPoint, DepAddress, DepartureTime, ArrivalTime, Budget);
 
         if (result.error) {
           setError(result.error);

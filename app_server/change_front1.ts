@@ -1,4 +1,4 @@
-const FetchScholarInfo = async (DepPoint: string, DepartureTime: number, ArrivalTime: number, Budget: number) => {
+const FetchServerInfo = async (DepPoint: string, DepAddress: string, DepartureTime: number, ArrivalTime: number, Budget: number) => {
 	try {
 		// POSTメソッドを使用し、リクエストボディにパラメータを含める
         const URL = "http://localhost:8080";
@@ -10,6 +10,7 @@ const FetchScholarInfo = async (DepPoint: string, DepartureTime: number, Arrival
 			// クエリパラメータをリクエストボディとして送信
 			body: JSON.stringify({
 				DepPoint: DepPoint,
+				DepAddress: DepAddress,
 				DepartureTime: DepartureTime,
 				ArrivalTime: ArrivalTime,
 				Budget: Budget
@@ -33,4 +34,4 @@ const FetchScholarInfo = async (DepPoint: string, DepartureTime: number, Arrival
 	}
 };
 
-export default FetchScholarInfo;
+export default FetchServerInfo;

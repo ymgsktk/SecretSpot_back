@@ -28,20 +28,46 @@ def execute_route():
     data = request.get_json()
     
     # 必須パラメータがすべて存在するか確認
-    if not all(key in data for key in ['DepPoint', 'DepartureTime', 'ArrivalTime', 'Budget']):
+    if not all(key in data for key in ['DepPoint', 'DepAddress', 'DepartureTime', 'ArrivalTime', 'Budget']):
         return jsonify({"error": Localization.get('app_server.routes.bad_request')}), 400
 
     # パラメータを取得
     dep_point = data['DepPoint']
+    dep_address = data['DepAddress']
     departure_time = data['DepartureTime']
     arrival_time = data['ArrivalTime']
     budget = data['Budget']
 
     # 非同期関数の呼び出し
-    result = asyncio.run(spot_motoki(dep_point, departure_time, arrival_time, budget))
+    result = asyncio.run(spot_motoki(dep_point, dep_address, departure_time, arrival_time, budget))
 
     # JSONレスポンスとして返す
     return jsonify(result)
+
+
+# ダミーデータを返すspot_motoki関数
+async def spot_motoki(dep_point, dep_address, departure_time, arrival_time, budget):
+    # ダミーデータとしてスポット情報を返す
+    return [
+        {
+            "Name": "Tokyo Tower",
+            "address": "4 Chome-2-8 Shibakoen, Minato City, Tokyo",
+            "Evaluate": 4.5,
+            "lat": "35.6586",
+            "lng": "139.7454",
+            "priceLevels": 3,
+            "DistanceTime": 15  # 出発地点からの到着までの時間（分）
+        },
+        {
+            "Name": "Shinjuku Gyoen National Garden",
+            "address": "11 Naitomachi, Shinjuku City, Tokyo",
+            "Evaluate": 4.7,
+            "lat": "35.6852",
+            "lng": "139.7100",
+            "priceLevels": 2,
+            "DistanceTime": 25  # 出発地点からの到着までの時間（分）
+        }
+    ]
 
 
 if __name__ == "__main__":
