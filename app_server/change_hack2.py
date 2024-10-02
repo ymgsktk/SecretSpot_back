@@ -56,7 +56,8 @@ async def spot_motoki(dep_point, dep_address, departure_time, arrival_time, budg
             "lat": "35.6586",
             "lng": "139.7454",
             "priceLevels": 3,
-            "DistanceTime": 15  # 出発地点からの到着までの時間（分）
+            "DistanceTime (hour)": 1,
+            "DistanceTime (minute)": 30 
         },
         {
             "Name": "Shinjuku Gyoen National Garden",
@@ -65,7 +66,8 @@ async def spot_motoki(dep_point, dep_address, departure_time, arrival_time, budg
             "lat": "35.6852",
             "lng": "139.7100",
             "priceLevels": 2,
-            "DistanceTime": 25  # 出発地点からの到着までの時間（分）
+            "DistanceTime (hour)": 0,
+            "DistanceTime (minute)": 45   
         }
     ]
 
