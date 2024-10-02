@@ -1,13 +1,16 @@
 from flask import Flask, request, jsonify
 import app.DepartureSpot as DepartureSpot
+import app.CandidateSpot as CandidateSpot
+import app.CalculateRoute as CalculateRoute
 from typing import Final
 import requests
 import time
 import numpy as np
+from datetime import datetime, timedelta
+import urllib.request, json
 
 class SearchSpot:
-    
-    
+
     @app.route('/api/selected-spot', methods=['POST'])
     def receive_departure_place(self):
         data = request.get_json()
@@ -19,19 +22,23 @@ class SearchSpot:
         address = data.get('address')
         lat = data.get('lat')
         lng = data.get('lng')
-        departure_time=data.get('departure')
-        Departure_spot=DepartureSpot(name,address,lat,lng,departure_time)
-        self.searchSpot(Departure_spot)
+        departure_time=data.get('departure_time')
         
-
+        departure_spot=DepartureSpot(name,address,lat,lng,departure_time)
+        #候補地探索
+        candidates=self.searchSpot(departure_spot)
+        #出発地から候補地の到着予定時間算出
+        self.calculateArrivalTime(departure_spot,candidates)
     
+            
+    # 候補地を探索
     def searchSpot(Departure_point :DepartureSpot):
         location=DepartureSpot.get_latitude()+", "+DepartureSpot.get_longitude()
         radius=5000
-        API_KEY: Final[str] = '' # APIキー
-        base_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
+        API_KEY: Final[str] = ' ' # APIキー
+        endpoint_searchSpot = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
         request_url=f'location={location}&radius={radius}&type={'tourist_attraction'}&key={API_KEY}'
-        url=base_url+request_url
+        url=endpoint_searchSpot+request_url
         
         # search結果取得
         response = requests.get(base_url)
@@ -79,6 +86,7 @@ class SearchSpot:
             sorted_and_filtered_places = sorted(filtered_places_2, key=lambda x: x['rating'],reverse=True)
             
             # レート上位7個の穴場スポットを取得
+            candidates=[]
             hidden_gem = sorted_and_filtered_places[:7]
             for place in hidden_gem:
                 
@@ -86,18 +94,65 @@ class SearchSpot:
                 address = place.get('vicinity', 'N/A') # 住所
                 lat = place['geometry']['location'].get('lat', 'N/A') # 緯度
                 lng = place['geometry']['location'].get('lng', 'N/A') # 経度
-                rating = place.get('rating', 'N/A') # 評価
-            if 'photos' in place:
-                photo_reference = place['photos'][0]['photo_reference']
-                PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
-                photo_params = {
-                    'maxwidth': 400,  # 任意の幅（最大400px）
-                    'photoreference': photo_reference,
-                    'key': API_KEY
-                }
-                
-                photo_url = requests.Request('GET', PHOTO_URL, params=photo_params).prepare().url
-            else:
-                photo_url = "No photo available"
+                evaluate = place.get('rating', 'N/A') # 評価
+                if 'photos' in place:
+                    photo_reference = place['photos'][0]['photo_reference']
+                    PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
+                    photo_params = {
+                        'maxwidth': 400,  # 任意の幅（最大400px）
+                        'photoreference': photo_reference,
+                        'key': API_KEY
+                    }
+                    photo_url = requests.Request('GET', PHOTO_URL, params=photo_params).prepare().url
+                else:
+                    photo_url = "No photo available"
+                candidate_spot=CandidateSpot(name,address,lat,lng,evaluate,photo_url)
+                candidates.append(candidate_spot)
+            return candidates
+            
+    #到着予定時間算出
+    def calculateArrivalTime(departure_spot, candidates):
+        endpoint_route: Final[str] = 'https://maps.googleapis.com/maps/api/directions/json?'
+        for destination in candidates:
+        
+            #リクエスト作成
+            origin_coordinates=departure_spot.get_latitude()+","+departure_spot.get_longitude()
+            destination_coordinates=destination.get_latitude()+","+destination.get_longitude()
+            mode="driving"
+            
+            nav_request = 'language=ja&mode={}&origin={}&destination={}&key={}'.format(mode,origin_coordinates,destination_coordinates,self.api_key)
+            nav_request = urllib.parse.quote_plus(nav_request, safe='=&')
+            request = endpoint_route + nav_request
 
+            print('')
+            print('=====')
+            print('url')
+            print(request)
+            print('=====')
+
+            #Google Maps Platform Directions APIを実行
+            response = urllib.request.urlopen(request).read()
+
+            #結果(JSON)を取得
+            directions = json.loads(response)
+
+            #所要時間を取得
+            for key in directions['routes']:
+                #print(key) # titleのみ参照
+                #print(key['legs']) 
+                for key2 in key['legs']:
+                    print('')
+                    print('=====')
+                    print(key2['distance']['text'])
+                    print(key2['duration']['value'])
+                    print(key2['duration']['text'])
+                    print('=====')
+            current_time = datetime.now()
+            duration_seconds= key2['duration']['value']
+            arrival_time = current_time + timedelta(seconds=duration_seconds)
+            
+            print(f"到着予定時刻: {arrival_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            destination.setEstimatedArrivalTime(arrival_time)
+        
         
