@@ -1,8 +1,8 @@
 
 # スポットを表現するクラス(親クラス)
-class Place:
+class Spot:
     
-    def __init__(self, name, address, latitude,longitude) -> None:
+    def __init__(self, name: str, address: str, latitude: str,longitude: str) -> None:
         self.name=name # スポット名
         self.address=address #住所
         self.latitude=latitude # 緯度
@@ -15,7 +15,7 @@ class Place:
     def set_name(self, name: str) -> None:
         self.name = name
     
-    def get_adress(self) -> str:
+    def get_address(self) -> str:
         return self.address
     
     def set_address(self, address: str) -> None:
