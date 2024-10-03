@@ -1,7 +1,9 @@
 const FetchServerInfo = async (DepPoint: string, DepAddress: string, DepartureTime: number, ArrivalTime: number, Budget: number) => {
 	try {
 		// POSTメソッドを使用し、リクエストボディにパラメータを含める
+		//const URL = "https://038f-240f-106-d945-1-f930-a00a-efc0-b721.ngrok-free.app";
         const URL = "http://localhost:8080";
+
 		const response = await fetch(`${URL}/api/execute`, {
 			method: 'POST',
 			headers: {

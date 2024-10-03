@@ -9,13 +9,19 @@ sys.path.append('../')
 #from app import scraping_main
 #from spot import spot_motoki
 
+from app.SearchSpot import SearchSpot 
+SearchSpot.run(dep_point, dep_address, departure_time, arrival_time, budget)
+
 from localization import Localization
+
+
 
 load_dotenv()
 app = Flask(__name__)
 
 FRONT_URL = "http://localhost:3000"
-CORS(app, resources={r"/api/*": {"origins": FRONT_URL}})
+# CORS(app, resources={r"/api/*": {"origins": FRONT_URL}})
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.route("/")
 def index():
@@ -50,24 +56,25 @@ async def spot_motoki(dep_point, dep_address, departure_time, arrival_time, budg
     # ダミーデータとしてスポット情報を返す
     return [
         {
-            "Name": "Tokyo Tower",
+            "name": "Tokyo Tower",
             "address": "4 Chome-2-8 Shibakoen, Minato City, Tokyo",
-            "Evaluate": 4.5,
+            "evaluate": 4.5,
             "lat": "35.6586",
             "lng": "139.7454",
             "priceLevels": 3,
-            "DistanceTime (hour)": 1,
-            "DistanceTime (minute)": 30 
+            "distanceTime": {"hour": 15, "min": 30}, 
+             "arrival_time": [11,57],
+            "url": "https://" 
         },
         {
-            "Name": "Shinjuku Gyoen National Garden",
+            "name": "Shinjuku Gyoen National Garden",
             "address": "11 Naitomachi, Shinjuku City, Tokyo",
-            "Evaluate": 4.7,
+            "evaluate": 4.7,
             "lat": "35.6852",
             "lng": "139.7100",
             "priceLevels": 2,
-            "DistanceTime (hour)": 0,
-            "DistanceTime (minute)": 45   
+             "distanceTime": {"hour": 16, "min": 30}, 
+            "url": "https://"
         }
     ]
 
