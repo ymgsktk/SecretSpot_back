@@ -7,7 +7,7 @@ import time as Time
 import numpy as np
 from datetime import datetime, timedelta
 import urllib.request, json
-
+from datetime import time
 
 
 class SearchSpot:
@@ -27,10 +27,8 @@ class SearchSpot:
         address = dep_address
         lat = dep_point['lat']
         lng = dep_point['lng']
-        lat="35.493985569186"
-        lng="134.22590706445"
-        now_time=datetime.now()
-        departure_time=now_time.replace(hour=departure_time['hour'],minute=departure_time['min'])
+        departure_time = time(departure_time['hour'], departure_time['min'])
+
         """
         name="東京駅"
         address="11"
@@ -38,6 +36,8 @@ class SearchSpot:
         lng="139.767125"
         departure_time=datetime.now()
         """
+        
+        
         departure_spot=DepartureSpot(address,lat,lng,departure_time)
         #候補地探索
         candidates=self.search_spot(departure_spot,departure_time)
@@ -49,9 +49,9 @@ class SearchSpot:
     # 候補地を探索
     def search_spot(self,departure_spot :DepartureSpot,departure_time):
         location=str(departure_spot.get_latitude())+", "+str(departure_spot.get_longitude())
-        radius=30000 #捜索する半径[m]
+        radius=5000
         endpoint_searchSpot = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
-        request_url=f'language={'ja'}&location={location}&radius={radius}&type={'tourist_attraction'}&key={self.API_KEY}'
+        request_url=f'language={'ja'}&location={location}&radius={radius}&type={'restaurant'}&key={self.API_KEY}'
         url=endpoint_searchSpot+request_url
         print('a')
         # search結果取得
@@ -168,11 +168,12 @@ class SearchSpot:
                     print(key2['distance']['text'])
                     print(key2['duration']['text'])
                     print('=====')
+            current_time = datetime.now()
             
             #所要時間を取得(秒)
             duration_seconds= key2['duration']['value']
             #出発時刻に所要時間を加算
-            arrival_time = departure_time + timedelta(seconds=duration_seconds)
+            arrival_time = current_time + timedelta(seconds=duration_seconds)
             
             print(f"到着予定時刻: {arrival_time.strftime('%H:%M')}")
             
