@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import urllib.request, json
 
 class SearchSpot:
-
+    API_KEY: Final[str] = 'AIzaSyB-UFNTN_spIRoXDKlAr5o2sh5RQRKj1uM' # APIキー
     #@app.route('/api/selected-spot', methods=['POST'])
     def run(self):
         name="東京駅"
@@ -31,9 +31,8 @@ class SearchSpot:
     def search_spot(self,departure_spot :DepartureSpot,departure_time):
         location=departure_spot.get_latitude()+", "+departure_spot.get_longitude()
         radius=5000
-        API_KEY: Final[str] = 'AIzaSyB-UFNTN_spIRoXDKlAr5o2sh5RQRKj1uM' # APIキー
         endpoint_searchSpot = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
-        request_url=f'language={'ja'}&location={location}&radius={radius}&type={'restaurant'}&key={API_KEY}'
+        request_url=f'language={'ja'}&location={location}&radius={radius}&type={'restaurant'}&key={self.API_KEY}'
         url=endpoint_searchSpot+request_url
         print('a')
         # search結果取得
@@ -102,9 +101,9 @@ class SearchSpot:
                     photo_reference = place['photos'][0]['photo_reference']
                     PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
                     photo_params = {
-                        'maxwidth': 400,  # 任意の幅（最大400px）
+                        'maxwidth': 300,  # 任意の幅（最大400px）
                         'photoreference': photo_reference,
-                        'key': API_KEY
+                        'key': self.API_KEY
                     }
                     photo_url = requests.Request('GET', PHOTO_URL, params=photo_params).prepare().url
                 else:
@@ -117,7 +116,6 @@ class SearchSpot:
     #到着予定時間算出
     def calculateArrivalTime(self,departure_spot, candidates,departure_time):
         endpoint_route: Final[str] = 'https://maps.googleapis.com/maps/api/directions/json?'
-        api_key='AIzaSyB-UFNTN_spIRoXDKlAr5o2sh5RQRKj1uM'
         for destination in candidates:
         
             #リクエスト作成
@@ -125,7 +123,7 @@ class SearchSpot:
             destination_coordinates=str(destination.get_latitude())+","+str(destination.get_longitude())
             mode="driving"
             
-            nav_request = 'language=ja&mode={}&origin={}&destination={}&key={}'.format(mode,origin_coordinates,destination_coordinates,api_key)
+            nav_request = 'language=ja&mode={}&origin={}&destination={}&key={}'.format(mode,origin_coordinates,destination_coordinates,self.API_KEY)
             nav_request = urllib.parse.quote_plus(nav_request, safe='=&')
             request = endpoint_route + nav_request
 
