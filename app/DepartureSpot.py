@@ -1,4 +1,4 @@
-from Spot import Spot
+from .Spot import Spot
 from datetime import time
 
 class DepartureSpot(Spot):

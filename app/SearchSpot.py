@@ -1,27 +1,28 @@
 #from flask import Flask, request, jsonify
-from DepartureSpot import DepartureSpot
-from CandidateSpot import CandidateSpot
+from .DepartureSpot import DepartureSpot
+from .CandidateSpot import CandidateSpot
 from typing import Final
 import requests
-import time
+import time as Time
 import numpy as np
 from datetime import datetime, timedelta
 import urllib.request, json
 from datetime import time
 
+
 class SearchSpot:
     API_KEY: Final[str] = 'AIzaSyB-UFNTN_spIRoXDKlAr5o2sh5RQRKj1uM' # APIキー
     #@app.route('/api/selected-spot', methods=['POST'])
 
-        """
-        const DepPoint = { lat: 35.6586, lng: 139.7454 };  // DepPointとして緯度と経度を設定
-        const DepAddress = "1-1 Marunouchi, Chiyoda City, Tokyo";  // 出発地点の住所
-        const DepartureTime = { hour: 9, min: 30 };  // 出発時刻を設定
-        const ArrivalTime = { hour: 17, min: 30 };  // 到着時刻を設定
-        const Budget = 30000;  // 予算を設定
-        """
-
-    def run(self, dep_point, dep_address, departure_time, arrival_time, budget):
+    """
+    const DepPoint = { lat: 35.6586, lng: 139.7454 };  // DepPointとして緯度と経度を設定
+    const DepAddress = "1-1 Marunouchi, Chiyoda City, Tokyo";  // 出発地点の住所
+    const DepartureTime = { hour: 9, min: 30 };  // 出発時刻を設定
+    const ArrivalTime = { hour: 17, min: 30 };  // 到着時刻を設定
+    const Budget = 30000;  // 予算を設定
+    """
+    #@staticmethod
+    async def run(self, dep_point, dep_address, departure_time, arrival_time, budget):
 
         address = dep_address
         lat = dep_point['lat']
@@ -39,15 +40,15 @@ class SearchSpot:
         
         departure_spot=DepartureSpot(address,lat,lng,departure_time)
         #候補地探索
-        candidates=self.search_spot(departure_spot,departure_spot)
+        candidates=self.search_spot(departure_spot,departure_time)
         #出発地から候補地の到着予定時間算出
         self.calculateArrivalTime(departure_spot,candidates,departure_time)
-        self.json_make(candidates)
+        return self.json_make(candidates)
     
             
     # 候補地を探索
     def search_spot(self,departure_spot :DepartureSpot,departure_time):
-        location=departure_spot.get_latitude()+", "+departure_spot.get_longitude()
+        location=str(departure_spot.get_latitude())+", "+str(departure_spot.get_longitude())
         radius=5000
         endpoint_searchSpot = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
         request_url=f'language={'ja'}&location={location}&radius={radius}&type={'restaurant'}&key={self.API_KEY}'
@@ -67,7 +68,7 @@ class SearchSpot:
             # 次のページが存在する場合データを取得
             for i in range(2):
                 if next_page_token:
-                    time.sleep(2)  # next_page_tokenが有効になるまで少し待つ（通常数秒）
+                    Time.sleep(2)  # next_page_tokenが有効になるまで少し待つ（通常数秒）
 
                     # 次のページのリクエスト
                     next_url = f'{url}&pagetoken={next_page_token}'
@@ -137,7 +138,7 @@ class SearchSpot:
         for destination in candidates:
         
             #リクエスト作成
-            origin_coordinates=departure_spot.get_latitude()+","+departure_spot.get_longitude()
+            origin_coordinates=str(departure_spot.get_latitude())+","+str(departure_spot.get_longitude())
             destination_coordinates=str(destination.get_latitude())+","+str(destination.get_longitude())
             mode="driving"
             
@@ -190,14 +191,14 @@ class SearchSpot:
         spot_list=[]
         for place in candidates:
             spot={'name': place.get_name(), 'address': place.get_address(),
-                'evaluate': place.get_evaluate(),'lat':place.get_latitude(),'lng': place.get_longitude(),
-                'arrival_time':[place.get_arrivalTime().hour,place.get_arrivalTime().minute],
+                'evaluate': place.get_evaluate(),'lat':str(place.get_latitude()),'lng': str(place.get_longitude()),
+                'distanceTime':{"hour": place.get_arrivalTime().hour,"min": place.get_arrivalTime().minute},
                 'url': place.get_url(),'price_level': place.get_price_level()
                 }
             spot_list.append(spot)
-            
-        with open('data.json', 'w',encoding='utf-8') as f:
-            json.dump(spot_list, f, ensure_ascii=False, indent=4)
+        return spot_list
+        print(spot_list)  
+        
 
 """    
 def main():

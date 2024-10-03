@@ -10,9 +10,7 @@ from localization import Localization
 #from app import scraping_main
 #from spot import spot_motoki
 
-from app import SearchSpot
-
-
+from app.SearchSpot import SearchSpot
 
 
 load_dotenv()
@@ -40,7 +38,8 @@ def execute_route():
     budget = data['Budget']
 
     # 非同期関数の呼び出し
-    result = asyncio.run(SearchSpot.run(dep_point, dep_address, departure_time, arrival_time, budget))
+    a=SearchSpot()
+    result = asyncio.run(a.run(dep_point, dep_address, departure_time, arrival_time, budget))
     # result = asyncio.run(spot_motoki(dep_point, dep_address, departure_time, arrival_time, budget))
 
     # JSONレスポンスとして返す
@@ -60,7 +59,7 @@ async def spot_motoki(dep_point, dep_address, departure_time, arrival_time, budg
             "lng": "139.7454",
             "priceLevels": 3,
             "distanceTime": {"hour": 15, "min": 30}, 
-             "arrival_time": [11,57],
+            "arrival_time": [11,57],
             "url": "https://" 
         },
         {
@@ -71,7 +70,7 @@ async def spot_motoki(dep_point, dep_address, departure_time, arrival_time, budg
             "lat": "35.6852",
             "lng": "139.7100",
             "priceLevels": 2,
-             "distanceTime": {"hour": 16, "min": 30}, 
+            "distanceTime": {"hour": 16, "min": 30}, 
             "url": "https://"
         }
     ]
