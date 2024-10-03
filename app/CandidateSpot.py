@@ -25,5 +25,12 @@ class CandidateSpot(Spot):
     
     def get_url(self):
         return self.url
+    
     def get_price_level(self):
         return self.price_level
+    
+    def get_name(self)  -> str:
+        return self.name
+    
+    def set_name(self, name: str) -> None:
+        self.name = name

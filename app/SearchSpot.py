@@ -19,7 +19,7 @@ class SearchSpot:
         departure_time=datetime.now()
         
         
-        departure_spot=DepartureSpot(name,address,lat,lng,departure_time)
+        departure_spot=DepartureSpot(address,lat,lng,departure_time)
         #候補地探索
         candidates=self.search_spot(departure_spot,departure_spot)
         #出発地から候補地の到着予定時間算出
