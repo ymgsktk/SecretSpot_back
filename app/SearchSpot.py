@@ -7,6 +7,8 @@ import time as Time
 import numpy as np
 from datetime import datetime, timedelta
 import urllib.request, json
+import openai
+
 
 
 
@@ -21,21 +23,16 @@ class SearchSpot:
     const ArrivalTime = { hour: 17, min: 30 };  // 到着時刻を設定
     const Budget = 30000;  // 予算を設定
     """
-    #@staticmethod
     async def run(self, dep_point, dep_address, departure_time, arrival_time, budget):
-
+        
+        # データ取り出し
         address = dep_address
         lat = dep_point['lat']
         lng = dep_point['lng']
         now_time=datetime.now() #時刻だけ扱うのは不可能なので、現在時刻で年、月、日だけ埋める
         departure_time=now_time.replace(hour=departure_time['hour'],minute=departure_time['min'])
-        """
-        name="東京駅"
-        address="11"
-        lat="35.681236"
-        lng="139.767125"
-        departure_time=datetime.now()
-        """
+        
+        #出発地点のオブジェクト作成
         departure_spot=DepartureSpot(address,lat,lng,departure_time)
         #候補地探索
         type="tourist_attraction"
@@ -43,6 +40,7 @@ class SearchSpot:
         
         #出発地から候補地の到着予定時間算出
         self.calculateArrivalTime(departure_spot,candidates,departure_time)
+        # 候補地をjson形式にして返す
         return self.json_make(candidates)
     
             
@@ -51,11 +49,12 @@ class SearchSpot:
         #検索条件定義
         location=str(departure_spot.get_latitude())+", "+str(departure_spot.get_longitude())
         radius=30000 #捜索する半径[m]
+        
         #リクエストURL作成
         endpoint_searchSpot = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
         request_url=f'language={'ja'}&location={location}&radius={radius}&type={type}&key={self.API_KEY}'
         url=endpoint_searchSpot+request_url
-        
+        num_of_acquisitions=7 #候補地取得最大数
         # search結果取得
         response = requests.get(url)
         places_data = response.json()
@@ -101,11 +100,12 @@ class SearchSpot:
             # レート順に並べ替え
             sorted_and_filtered_places = sorted(filtered_places_3, key=lambda x: x['rating'],reverse=True)
             
-            # レート上位7個の穴場スポットを取得
+            # レート上位num_of_acquisitions個の穴場スポットを取得
             candidates=[]
             place_count=len(sorted_and_filtered_places)
-            if(place_count>=7):
-                hidden_gem = sorted_and_filtered_places[:7]
+            
+            if(place_count>=num_of_acquisitions):
+                hidden_gem = sorted_and_filtered_places[:num_of_acquisitions]
             else:
                 hidden_gem = sorted_and_filtered_places[place_count]
                 
@@ -117,25 +117,18 @@ class SearchSpot:
                 lng = place['geometry']['location'].get('lng', 'N/A') # 経度
                 evaluate = place.get('rating', '記載情報なし') # 評価
                 price_level=place.get('price_level','記載情報なし') # プライスレベル
+                photo_url=self.get_photo_url(place) #スポット写真のURL
+                information_url=self.get_information_url(place) #スポット情報記載ページのURL
+                # openai使用不可によりコメント化
+                # self.get_explanation(place) 
                 
-                if 'photos' in place:
-                    photo_reference = place['photos'][0]['photo_reference']
-                    PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
-                    photo_params = {
-                        'maxwidth': 300,  # 任意の幅（最大400px）
-                        'photoreference': photo_reference,
-                        'key': self.API_KEY
-                    }
-                    photo_url = requests.Request('GET', PHOTO_URL, params=photo_params).prepare().url
-                else:
-                    photo_url = "No photo available"
-                
-                candidate_spot=CandidateSpot(name,address,lat,lng,evaluate,photo_url,price_level)
+                # 探索候補地オブジェクト作成
+                candidate_spot=CandidateSpot(name,address,lat,lng,evaluate,photo_url,price_level,information_url)
                 candidates.append(candidate_spot)
             return candidates
             
     #到着予定時間算出
-    def calculateArrivalTime(self,departure_spot, candidates,departure_time):
+    def calculateArrivalTime(self,departure_spot, candidates, departure_time):
         endpoint_route: Final[str] = 'https://maps.googleapis.com/maps/api/directions/json?'
         for destination in candidates:
         
@@ -148,12 +141,6 @@ class SearchSpot:
             nav_request = urllib.parse.quote_plus(nav_request, safe='=&')
             request = endpoint_route + nav_request
 
-            print('')
-            print('=====')
-            print('url')
-            print(request)
-            print('=====')
-
             #Google Maps Platform Directions APIを実行
             response = urllib.request.urlopen(request).read()
 
@@ -162,8 +149,6 @@ class SearchSpot:
 
             #所要時間を取得
             for key in directions['routes']:
-                #print(key) # titleのみ参照
-                #print(key['legs']) 
                 for key2 in key['legs']:
                     print('')
                     print('=====')
@@ -179,22 +164,64 @@ class SearchSpot:
             print(f"到着予定時刻: {arrival_time.strftime('%H:%M')}")
             
             destination.set_arrivalTime(arrival_time)
-            print(destination.get_name())
-            print(destination.get_url())
-            print(destination.get_evaluate())
-            print(destination.get_arrivalTime())
             
+    # スポットの情報が載ったページURLを取得
+    def get_information_url(self,place):
+        place_id=place.get('place_id')
+        url = f"https://maps.googleapis.com/maps/api/place/details/json"
+        params = {
+            "place_id": place_id,
+            "fields": "name,website",
+            "key": self.API_KEY
+        }      
+        
+        response = requests.get(url, params=params)
+        if response.status_code == 200:
+            result = response.json().get('result', {})
+            information_url=result.get('website')
             
-    # json形式に落とし込む
+            if (information_url==None): #スポットに関するページURLが取得できなかった場合代わりに検索結果のurlを代入
+                information_url="https://www.google.com/search?q="+str(place.get('name'))
+        else:
+            information_url="https://www.google.com/search?q="+str(place.get('name'))
+        return information_url
+    
+    # スポットの写真URL取得
+    def get_photo_url(self,place):
+        if 'photos' in place:
+            photo_reference = place['photos'][0]['photo_reference']
+            PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo"
+            photo_params = {
+                'maxwidth': 300,  # 任意の幅（最大400px）
+                'photoreference': photo_reference,
+                'key': self.API_KEY
+            }
+            photo_url = requests.Request('GET', PHOTO_URL, params=photo_params).prepare().url
+        else:
+            photo_url = "No photo available"
+        return photo_url
+    
+    def get_explanation(self,place):
+        openai.api_key = self.gpt_api_key
+        prompt = "おはよう"
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # 使用するモデル（GPT-4の場合は "gpt-4"）
+            messages=[
+                {"role": "user", "content": prompt},
+            ]
+        )
+        reply = response['choices'][0]['message']['content']
+        print(reply)
+        
+    # 辞書型に落とし込む
     def json_make(self,candidates):
         spot_list=[]
         for place in candidates:
             spot={'name': place.get_name(), 'address': place.get_address(),
                 'evaluate': place.get_evaluate(),'lat':str(place.get_latitude()),'lng': str(place.get_longitude()),
                 'distanceTime':{"hour": place.get_arrivalTime().hour,"min": place.get_arrivalTime().minute},
-                'url': place.get_url(),'price_level': place.get_price_level()
+                'url': str(place.get_url()),'price_level': place.get_price_level(),'information_url': str(place.get_information_url())
                 }
             spot_list.append(spot)
         return spot_list
-        print(spot_list)  
         
