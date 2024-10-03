@@ -38,8 +38,8 @@ def execute_route():
     budget = data['Budget']
 
     # 非同期関数の呼び出し
-    a=SearchSpot()
-    result = asyncio.run(a.run(dep_point, dep_address, departure_time, arrival_time, budget))
+    search_spot=SearchSpot()
+    result = asyncio.run(search_spot.run(dep_point, dep_address, departure_time, arrival_time, budget))
     # result = asyncio.run(spot_motoki(dep_point, dep_address, departure_time, arrival_time, budget))
 
     # JSONレスポンスとして返す

@@ -27,9 +27,7 @@ class SearchSpot:
         address = dep_address
         lat = dep_point['lat']
         lng = dep_point['lng']
-        lat="35.493985569186"
-        lng="134.22590706445"
-        now_time=datetime.now()
+        now_time=datetime.now() #時刻だけ扱うのは不可能なので、現在時刻で年、月、日だけ埋める
         departure_time=now_time.replace(hour=departure_time['hour'],minute=departure_time['min'])
         """
         name="東京駅"
