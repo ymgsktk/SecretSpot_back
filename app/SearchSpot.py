@@ -7,16 +7,34 @@ import time
 import numpy as np
 from datetime import datetime, timedelta
 import urllib.request, json
+from datetime import time
 
 class SearchSpot:
     API_KEY: Final[str] = 'AIzaSyB-UFNTN_spIRoXDKlAr5o2sh5RQRKj1uM' # APIキー
     #@app.route('/api/selected-spot', methods=['POST'])
-    def run(self):
+
+        """
+        const DepPoint = { lat: 35.6586, lng: 139.7454 };  // DepPointとして緯度と経度を設定
+        const DepAddress = "1-1 Marunouchi, Chiyoda City, Tokyo";  // 出発地点の住所
+        const DepartureTime = { hour: 9, min: 30 };  // 出発時刻を設定
+        const ArrivalTime = { hour: 17, min: 30 };  // 到着時刻を設定
+        const Budget = 30000;  // 予算を設定
+        """
+
+    def run(self, dep_point, dep_address, departure_time, arrival_time, budget):
+
+        address = dep_address
+        lat = dep_point['lat']
+        lng = dep_point['lng']
+        departure_time = time(departure_time['hour'], departure_time['min'])
+
+        """
         name="東京駅"
         address="11"
         lat="35.681236"
         lng="139.767125"
         departure_time=datetime.now()
+        """
         
         
         departure_spot=DepartureSpot(address,lat,lng,departure_time)
@@ -180,10 +198,11 @@ class SearchSpot:
             
         with open('data.json', 'w',encoding='utf-8') as f:
             json.dump(spot_list, f, ensure_ascii=False, indent=4)
-            
-        
+
+"""    
 def main():
     a=SearchSpot()
     a.run()
 if __name__ == "__main__":
     main()
+"""

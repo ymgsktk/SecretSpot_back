@@ -5,14 +5,13 @@ from dotenv import load_dotenv
 import os
 import sys
 sys.path.append('../')
+from localization import Localization
 #以下のappからspotに変更する
 #from app import scraping_main
 #from spot import spot_motoki
 
-from app.SearchSpot import SearchSpot 
-SearchSpot.run(dep_point, dep_address, departure_time, arrival_time, budget)
+from app import SearchSpot
 
-from localization import Localization
 
 
 
@@ -39,11 +38,16 @@ def execute_route():
     departure_time = data['DepartureTime']
     arrival_time = data['ArrivalTime']
     budget = data['Budget']
+
     # 非同期関数の呼び出し
-    result = asyncio.run(spot_motoki(dep_point, dep_address, departure_time, arrival_time, budget))
+    result = asyncio.run(SearchSpot.run(dep_point, dep_address, departure_time, arrival_time, budget))
+    # result = asyncio.run(spot_motoki(dep_point, dep_address, departure_time, arrival_time, budget))
+
     # JSONレスポンスとして返す
     return jsonify(result)
 # ダミーデータを返すspot_motoki関数
+
+
 async def spot_motoki(dep_point, dep_address, departure_time, arrival_time, budget):
     # ダミーデータとしてスポット情報を返す
     return [
