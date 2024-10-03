@@ -38,20 +38,24 @@ class SearchSpot:
         """
         departure_spot=DepartureSpot(address,lat,lng,departure_time)
         #候補地探索
-        candidates=self.search_spot(departure_spot,departure_time)
+        type="tourist_attraction"
+        candidates=self.search_spot(departure_spot,type)
+        
         #出発地から候補地の到着予定時間算出
         self.calculateArrivalTime(departure_spot,candidates,departure_time)
         return self.json_make(candidates)
     
             
     # 候補地を探索
-    def search_spot(self,departure_spot :DepartureSpot,departure_time):
+    def search_spot(self,departure_spot :DepartureSpot,type):
+        #検索条件定義
         location=str(departure_spot.get_latitude())+", "+str(departure_spot.get_longitude())
         radius=30000 #捜索する半径[m]
+        #リクエストURL作成
         endpoint_searchSpot = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?'
-        request_url=f'language={'ja'}&location={location}&radius={radius}&type={'tourist_attraction'}&key={self.API_KEY}'
+        request_url=f'language={'ja'}&location={location}&radius={radius}&type={type}&key={self.API_KEY}'
         url=endpoint_searchSpot+request_url
-        print('a')
+        
         # search結果取得
         response = requests.get(url)
         places_data = response.json()
@@ -111,8 +115,8 @@ class SearchSpot:
                 address = place.get('vicinity', 'N/A') # 住所
                 lat = place['geometry']['location'].get('lat', 'N/A') # 緯度
                 lng = place['geometry']['location'].get('lng', 'N/A') # 経度
-                evaluate = place.get('rating', 'N/A') # 評価
-                price_level=place.get('price_level','N/A') # プライスレベル
+                evaluate = place.get('rating', '記載情報なし') # 評価
+                price_level=place.get('price_level','記載情報なし') # プライスレベル
                 
                 if 'photos' in place:
                     photo_reference = place['photos'][0]['photo_reference']
@@ -175,9 +179,7 @@ class SearchSpot:
             print(f"到着予定時刻: {arrival_time.strftime('%H:%M')}")
             
             destination.set_arrivalTime(arrival_time)
-            print("a")
             print(destination.get_name())
-            print("a")
             print(destination.get_url())
             print(destination.get_evaluate())
             print(destination.get_arrivalTime())
@@ -196,11 +198,3 @@ class SearchSpot:
         return spot_list
         print(spot_list)  
         
-
-"""    
-def main():
-    a=SearchSpot()
-    a.run()
-if __name__ == "__main__":
-    main()
-"""
