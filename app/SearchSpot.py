@@ -23,7 +23,7 @@ class SearchSpot:
     const ArrivalTime = { hour: 17, min: 30 };  // 到着時刻を設定
     const Budget = 30000;  // 予算を設定
     """
-    async def run(self, dep_point, dep_address, departure_time, arrival_time, budget):
+    async def run(self, dep_point, dep_address, departure_time, arrival_time, budget,type):
         
         # データ取り出し
         address = dep_address
@@ -34,8 +34,7 @@ class SearchSpot:
         
         #出発地点のオブジェクト作成
         departure_spot=DepartureSpot(address,lat,lng,departure_time)
-        #候補地探索
-        type="tourist_attraction"
+        #候補地探索 
         candidates=self.search_spot(departure_spot,type)
         
         #出発地から候補地の到着予定時間算出
@@ -120,10 +119,10 @@ class SearchSpot:
                 photo_url=self.get_photo_url(place) #スポット写真のURL
                 information_url=self.get_information_url(place) #スポット情報記載ページのURL
                 # openai使用不可によりコメント化
-                # self.get_explanation(place) 
+                explanation=self.get_explanation(place,type) 
                 
                 # 探索候補地オブジェクト作成
-                candidate_spot=CandidateSpot(name,address,lat,lng,evaluate,photo_url,price_level,information_url)
+                candidate_spot=CandidateSpot(name,address,lat,lng,evaluate,photo_url,price_level,information_url,explanation)
                 candidates.append(candidate_spot)
             return candidates
             
@@ -167,6 +166,7 @@ class SearchSpot:
             
     # スポットの情報が載ったページURLを取得
     def get_information_url(self,place):
+        
         place_id=place.get('place_id')
         url = f"https://maps.googleapis.com/maps/api/place/details/json"
         params = {
@@ -186,7 +186,33 @@ class SearchSpot:
             information_url="https://www.google.com/search?q="+str(place.get('name'))
         return information_url
     
-    # スポットの写真URL取得
+    def get_address_component(self,place):
+        url = "https://maps.googleapis.com/maps/api/place/details/json"
+        place_id=place.get('place_id')
+        params = {
+            "language": "ja",
+            "place_id": place_id,  # 対象のplace_idを指定
+            "key": self.API_KEY        # あなたのGoogle APIキーを指定
+        }
+        response = requests.get(url, params=params)
+        data = response.json()
+        # 'formatted_address' を使ってフルアドレスを取得
+        if 'result' in data:
+            full_address = data['result'].get('formatted_address', '住所情報がありません')
+            print("フルアドレス:", full_address)
+            address_components = data['result'].get('address_components', [])
+            long_name="a"
+            for component in address_components:
+                if "administrative_area_level_1" in component["types"]:
+                    long_name=component["long_name"]  # 都道府県名を返す
+            
+            print(long_name)     
+            return long_name
+        else:
+            print("結果が見つかりませんでした。")
+        
+        # スポットの写真URL取得
+        
     def get_photo_url(self,place):
         if 'photos' in place:
             photo_reference = place['photos'][0]['photo_reference']
@@ -201,16 +227,27 @@ class SearchSpot:
             photo_url = "No photo available"
         return photo_url
     
-    def get_explanation(self,place):
-        openai.api_key = self.gpt_api_key
-        prompt = "おはよう"
+    def get_explanation(self,place,type):
+        long_name=self.get_address_component(place)
+        
+        openai.api_key=''
+        openai.organization=''
+        pronpt=""
+        
+        if(type=="tourist_attraction"):
+            prompt = '{}にある{}について3行程度で教えてください、所在地情報は含めないでください'.format(long_name,place.get('name', 'N/A'),)
+        else:
+            prompt = '{}にある{}についてどんな料理が食べれるか教えてください、所在地情報は含めないでください'.format(long_name,place.get('name', 'N/A'),)
+        prompt = '{}にある{}について3行程度で教えてください、所在地情報は含めないでください'.format(long_name,place.get('name', 'N/A'),)
+        print(prompt)
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # 使用するモデル（GPT-4の場合は "gpt-4"）
+            model="gpt-4",  # 使用するモデル（GPT-4の場合は "gpt-4"）
             messages=[
                 {"role": "user", "content": prompt},
             ]
         )
         reply = response['choices'][0]['message']['content']
+        return reply
         print(reply)
         
     # 辞書型に落とし込む
@@ -220,7 +257,8 @@ class SearchSpot:
             spot={'name': place.get_name(), 'address': place.get_address(),
                 'evaluate': place.get_evaluate(),'lat':str(place.get_latitude()),'lng': str(place.get_longitude()),
                 'distanceTime':{"hour": place.get_arrivalTime().hour,"min": place.get_arrivalTime().minute},
-                'url': str(place.get_url()),'price_level': place.get_price_level(),'information_url': str(place.get_information_url())
+                'url': str(place.get_url()),'price_level': place.get_price_level(),'information_url': str(place.get_information_url()),
+                'explanation': str(place.get_explanation())
                 }
             spot_list.append(spot)
         return spot_list

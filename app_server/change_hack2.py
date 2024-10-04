@@ -28,7 +28,7 @@ def execute_route():
     # リクエストデータのJSONを取得
     data = request.get_json()
     # 必須パラメータがすべて存在するか確認
-    if not all(key in data for key in ['DepPoint', 'DepAddress', 'DepartureTime', 'ArrivalTime', 'Budget']):
+    if not all(key in data for key in ['DepPoint', 'DepAddress', 'DepartureTime', 'ArrivalTime', 'Budget','type']):
         return jsonify({"error": Localization.get('app_server.routes.bad_request')}), 400
     # パラメータを取得
     dep_point = data['DepPoint']
@@ -36,10 +36,11 @@ def execute_route():
     departure_time = data['DepartureTime']
     arrival_time = data['ArrivalTime']
     budget = data['Budget']
+    type = data['type']
 
     # 非同期関数の呼び出し
     search_spot=SearchSpot()
-    result = asyncio.run(search_spot.run(dep_point, dep_address, departure_time, arrival_time, budget))
+    result = asyncio.run(search_spot.run(dep_point, dep_address, departure_time, arrival_time, budget,type))
     # result = asyncio.run(spot_motoki(dep_point, dep_address, departure_time, arrival_time, budget))
 
     # JSONレスポンスとして返す

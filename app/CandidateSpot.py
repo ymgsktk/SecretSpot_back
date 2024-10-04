@@ -3,7 +3,7 @@ from datetime import datetime
 
 # スポット候補地を表すクラス
 class CandidateSpot(Spot):
-    def __init__(self, name: str, address: str, latitude: str, longitude: str, evaluate: int, url: str, price_level, information_url: str) -> None:
+    def __init__(self, name: str, address: str, latitude: str, longitude: str, evaluate: int, url: str, price_level, information_url: str,explanation: str) -> None:
         # 親クラス(Place)の属性を初期化
         super().__init__(address, latitude, longitude)
         self.evaluate=evaluate
@@ -11,6 +11,7 @@ class CandidateSpot(Spot):
         self.price_level=price_level
         self.name=name
         self.information_url=information_url
+        self.explanation=explanation
         
     def set_arrivalTime(self,estimated_arrival_time: datetime):
         self.estimated_arrival_time=estimated_arrival_time    
@@ -41,3 +42,5 @@ class CandidateSpot(Spot):
     
     def get_information_url(self)  -> str:
         return self.information_url
+    def get_explanation(self)  -> str:
+        return self.explanation
