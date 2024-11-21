@@ -1,0 +1,9 @@
+// /app_server/pages/index.js
+function Home() {
+    return <div>Welcome to Next.js!</div>;
+  }
+  
+  export default Home;
+
+
+これによって、http://localhost:3000/と打つと、Welcome to Next.js!と表示される。

@@ -1,0 +1,6 @@
+app_server:
+  change_hack:
+    bad_request: "Missing 'params' parameter"
+  
+  change_hack2:
+    bad_request: "Missing 'params' parameter"

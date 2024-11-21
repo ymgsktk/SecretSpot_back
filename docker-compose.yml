@@ -3,7 +3,10 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    container_name: secret_back
+    container_name: back
+    ports:
+      - "49515:5000"
+    #restart: always
     tty: true
     volumes:
       - type: bind
